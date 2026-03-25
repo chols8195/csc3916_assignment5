@@ -380,6 +380,53 @@ router.get('/', (req, res) => {
   });
 });
 
+// Search endpoint for extra credit
+router.post('/search', authJwtController.isAuthenticated, async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ success: false, message: 'Search query is required' });
+    }
+
+    const searchRegex = new RegExp(query, 'i'); // Case-insensitive search
+
+    const movies = await Movie.aggregate([
+      {
+        $match: {
+          $or: [
+            { title: searchRegex },
+            { 'actors.actorName': searchRegex },
+            { 'actors.characterName': searchRegex },
+            { genre: searchRegex }
+          ]
+        }
+      },
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'movieId',
+          as: 'reviews'
+        }
+      },
+      {
+        $addFields: {
+          avgRating: { $avg: '$reviews.rating' }
+        }
+      },
+      {
+        $sort: { avgRating: -1 }
+      }
+    ]);
+
+    res.status(200).json({ success: true, movies, count: movies.length });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Error searching movies', error: err.message });
+  }
+});
+
 app.use('/', router);
 
 const PORT = process.env.PORT || 8080; // Define PORT before using it
