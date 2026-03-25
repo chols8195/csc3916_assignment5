@@ -122,7 +122,7 @@ router.post('/signin', async (req, res) => { // Use async/await
 });
 
 router.route('/movies')
-  .get(async (req, res) => {
+  .get(authJwtController.isAuthenticated, async (req, res) => {
     try {
       // Build match filter
       let matchFilter = {};
@@ -233,7 +233,7 @@ router.route('/movies')
 
 // GET, PUT, DELETE for specific movie title 
 router.route('/movies/:title')
-  .get(async (req, res) => {
+  .get(authJwtController.isAuthenticated, async (req, res) => {
     try {
       const movie = await Movie.findOne({ title: req.params.title });
       
@@ -330,14 +330,15 @@ router.route('/reviews')
   })
   .post(authJwtController.isAuthenticated, async (req, res) => {
     try{
-      const { movieId, username, review, rating } = req.body;
+      const { movieId, review, rating } = req.body;
+      const username = req.user.username; // Get username from JWT token
 
-      // Validate required fields 
-      if (!movieId || !username || !review || rating === undefined) {
-        return res.status(400).json({ success: false, message: 'moveId, username, review, and rating are required'});
+      // Validate required fields
+      if (!movieId || !review || rating === undefined) {
+        return res.status(400).json({ success: false, message: 'movieId, review, and rating are required'});
       }
 
-      // Check if movie exists 
+      // Check if movie exists
       const movie = await Movie.findById(movieId);
       if (!movie) {
         return res.status(404).json({ success: false, message: 'Movie not found'});
@@ -346,7 +347,7 @@ router.route('/reviews')
       const newReview = new Review({ movieId, username, review, rating });
       await newReview.save();
 
-      // Track event in Google Analytics 
+      // Track event in Google Analytics
       trackEvent(movie.title, movie.genre);
 
       res.status(201).json({ message: 'Review created!' });

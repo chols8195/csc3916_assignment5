@@ -483,7 +483,7 @@ const movies = [
     releaseDate: 2024,
     genre: "Comedy",
     status: "coming_soon",
-    imageUrl: "https://image.tmdb.org/t/p/w500/e1J2oNzSBdou01sUvriVeCjGRNi.jpg",
+    imageUrl: "https://image.tmdb.org/t/p/w500/7RyHsO4yDXtBv1zUU3mTpHeQ0d5.jpg",
     actors: [
       { actorName: "Paul Rudd", characterName: "Gary Grooberson" },
       { actorName: "Carrie Coon", characterName: "Callie Spengler" },
