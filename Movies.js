@@ -7,7 +7,7 @@ const connectDB = async () => {
     console.log("Connected to MongoDB");
   } catch (error) {
     console.error("MongoDB connection error:", error);
-    process.exit(1); // Exit the process if the connection fails (optional)
+    process.exit(1);
   }
 };
 
@@ -32,14 +32,18 @@ const MovieSchema = new Schema({
     enum: [
       'Action',
       'Adventure',
+      'Animation',
       'Comedy',
       'Drama',
+      'Family',
       'Fantasy',
       'Horror',
       'Mystery',
+      'Romance',
+      'Sci-Fi',
+      'Science Fiction',
       'Thriller',
-      'Western',
-      'Science Fiction'
+      'Western'
     ],
   },
   actors: {
@@ -55,7 +59,14 @@ const MovieSchema = new Schema({
     },
     required: true
   },
-  imageUrl: { type: String }
+  imageUrl: { 
+    type: String 
+  },
+  status: {
+    type: String,
+    enum: ['now_playing', 'coming_soon'],
+    default: 'now_playing'
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model('Movie', MovieSchema);

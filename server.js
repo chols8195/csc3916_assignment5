@@ -124,31 +124,39 @@ router.post('/signin', async (req, res) => { // Use async/await
 router.route('/movies')
   .get(async (req, res) => {
     try {
+      // Build match filter
+      let matchFilter = {};
+      if (req.query.status) {
+        matchFilter.status = req.query.status;
+      }
+
       // Check if reviews=true query parameter
       if (req.query.reviews === 'true') {
         const moviesWithReviews = await Movie.aggregate([
-            {
-                $lookup: {
-                    from: 'reviews',
-                    localField: '_id',
-                    foreignField: 'movieId',
-                    as: 'reviews'
-                }
-            },
-            {
-                $addFields: {
-                    avgRating: { $avg: '$reviews.rating' }
-                }
-            },
-            {
-                $sort: { avgRating: -1 }
+          { $match: matchFilter },
+          {
+            $lookup: {
+              from: 'reviews',
+              localField: '_id',
+              foreignField: 'movieId',
+              as: 'reviews'
             }
+          },
+          {
+            $addFields: {
+              avgRating: { $avg: '$reviews.rating' }
+            }
+          },
+          {
+            $sort: { avgRating: -1 }
+          }
         ]);
         return res.status(200).json({ success: true, movies: moviesWithReviews });
       }
 
       // Without reviews, still sort by average rating
       const movies = await Movie.aggregate([
+        { $match: matchFilter },
         {
           $lookup: {
               from: 'reviews',
